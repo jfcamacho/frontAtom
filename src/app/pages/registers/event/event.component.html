@@ -1,0 +1,161 @@
+<p-toast/>
+<p-confirmdialog />
+<div class="card relative">
+    <div *ngIf="viewWindow" class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 z-10">
+      <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration=".5s" [style]="{ width: '50px', height: '50px' }" />
+    </div>
+    <p-table
+        #dt
+        [value]="tareas"
+        [paginator]="true"
+        paginatorDropdownAppendTo="body"
+        [rows]="10"
+        [showCurrentPageReport]="true"
+        responsiveLayout="scroll"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [globalFilterFields]="['id', 'kind', 'title', 'status', 'description']"
+    >
+        <ng-template #caption>
+            <div class="flex flex-wrap gap-2 items-center justify-between">
+                <p-icon-field class="w-full sm:w-80 order-1 sm:order-none">
+                    <p-inputicon class="pi pi-search" />
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Busqueda General" class="w-full" />
+                </p-icon-field>
+                <button (click)="navigateToCreateTarea()" pButton outlined class="w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-receipt" label="Asignar tarea"></button>
+            </div>
+        </ng-template>
+        <ng-template #header>
+            <tr>
+                <th pSortableColumn="id" class="white-space-nowrap" style="width:20%">Identificador <p-sortIcon field="id"></p-sortIcon></th>
+                <th pSortableColumn="kind" class="white-space-nowrap" style="width:20%">Tipo de Tarea <p-sortIcon field="kind"></p-sortIcon></th>
+                <th pSortableColumn="title" class="white-space-nowrap" style="width:20%">Título <p-sortIcon field="title"></p-sortIcon></th>
+                <th pSortableColumn="description" class="white-space-nowrap" style="width:20%; text-align: center;">Descripción <p-sortIcon field="description"></p-sortIcon> </th>
+                <th pSortableColumn="status" class="white-space-nowrap" style="width:20%; text-align: center;">Estado <p-sortIcon field="status"></p-sortIcon> </th>
+                <th class="white-space-nowrap" style="width:20%; text-align: center;">Acciones </th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-tarea>
+            <tr>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <span class="image-text">{{ tarea.createdAt }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <span class="image-text">{{ tarea.kind }}</span>
+                    </div>
+                </td>
+                <td>{{ tarea.title }}</td>
+                <td >
+                    <div class="flex justify-center gap-2" style="width: 100%;">
+                        {{ (tarea?.description | slice: 0: 20) + (tarea.role?.length > 20 ? '...' : '')}}
+                    </div>
+                </td>
+                <td >
+                    <div class="flex justify-center gap-2" style="width: 100%;">
+                        <p-tag [severity]="tarea.status === 'ACTIVA' ? 'info' : tarea.status === 'INACTIVA' ? 'danger': tarea.status === 'COMPLETA' ? 'success' : 'warn'" [value]="tarea.status || 'SIN ESTADO'" />
+                    </div>
+                </td>
+                <td>
+                    <div class="flex justify-center gap-2" style="width: 100%;">
+
+                        <button *ngIf="tarea.status !== 'COMPLETA'" (click)="navigateToEditTarea(tarea.id)" pTooltip="Editar tarea" tooltipPosition="top"
+                        pButton outlined class="w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-pencil"></button>
+                        <button *ngIf="tarea.status !== 'COMPLETA'" (click)="checkTarea(tarea.id)" pTooltip="Completar tarea" tooltipPosition="top"
+                        pButton outlined severity="success" class="w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-check"></button>
+                        <button *ngIf="tarea.status !== 'COMPLETA'" (click)="blockTarea(tarea.id, $event)" pTooltip="Bloquear tarea" tooltipPosition="top"
+                        pButton outlined severity="warn" class="w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-lock"></button>
+                        <button *ngIf="tarea.status !== 'COMPLETA'" (click)="deleteTarea(tarea.id, $event)" pTooltip="Eliminar tarea" tooltipPosition="top"
+                        pButton outlined severity="danger" class="w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-trash"></button>
+                        <button *ngIf="tarea.status === 'COMPLETA'" (click)="checkTarea(tarea.id)" pTooltip="Observar tarea" tooltipPosition="top"
+                        pButton outlined severity="info" class="w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-eye"></button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog #dd header="{{headerText}}" [modal]="true" [(visible)]="showTarea" [style]="{ width: '35rem'}">
+
+    <div *ngIf="viewChargeGif" class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 z-10">
+        <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration=".5s" [style]="{ width: '50px', height: '50px' }" />
+    </div>
+    <span *ngIf="tarea.id" class="p-text-secondary block mb-8">Modificar la tare asignada al usuario.</span>
+    <form #myNewTarea="ngForm" (ngSubmit)="createTarea(myNewTarea)">
+        <div class="mb-6 col-span-12 md:col-span-5 relative">
+            <label for="shoreKind" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Tipos de tarea disponibles</label>
+            <p-select [appendTo]="dd" inputId="shoreKind" [options]="tipoTareasList" id="shoreKind" name="shoreKind" [(ngModel)]="selectedtipoTarea" optionLabel="kind" fluid [filter]="true" filterBy="kind" [showClear]="true" placeholder="Seleccione un tipo de tarea">
+                <ng-template #selectedItem let-kind>
+                    <div class="flex items-center gap-2" *ngIf="selectedtipoTarea">
+                        <div>{{ selectedtipoTarea.kind }}</div>
+                    </div>
+                </ng-template>
+                <ng-template let-kind #item>
+                    <div class="flex items-center">
+                        <div>{{ kind.kind }}</div>
+                    </div>
+                </ng-template>
+            </p-select>
+            <p-message *ngIf="!selectedtipoTarea?.id && myNewTarea.submitted" severity="error" variant="simple" size="small">Debe seleccionar un tipo de tarea</p-message>
+        </div>
+        <div class="mb-6 col-span-12 md:col-span-3">
+            <label for="kindDescription" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Descripción del tipo de tarea </label>
+            <input readonly id="kindDescription" type="text" pInputText name="kindDescription" value="{{selectedtipoTarea?.description || ''}}" fluid />
+        </div>
+        <div class="mb-6 col-span-12 md:col-span-3">
+            <label for="title" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Título de la tarea *</label>
+            <input id="title" type="text" pInputText name="title" [(ngModel)]="tarea.title" fluid required #title="ngModel"/>
+            <p-message *ngIf="title.invalid && myNewTarea.submitted" severity="error" variant="simple" size="small">La tarea debe poseer un título</p-message>
+        </div>
+        <div class="mb-6 col-span-12 md:col-span-3">
+            <label for="description" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Descripción de la tarea *</label>
+            <input id="description" type="text" pInputText name="description" [(ngModel)]="tarea.description" fluid required #description="ngModel"/>
+            <p-message *ngIf="description.invalid && myNewTarea.submitted" severity="error" variant="simple" size="small">Se debe describir la tarea</p-message>
+        </div>
+        <div *ngIf="tarea.id" class="mb-6 col-span-12 md:col-span-5">
+            <label for="status" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Estado</label>
+            <p-select [appendTo]="dd" inputId="status" [options]="statusList" id="status" name="status" [(ngModel)]="selectedStatus" optionLabel="name" fluid [filter]="true" filterBy="name" [showClear]="true" placeholder="Seleccione un estado">
+                <ng-template #selectedItem let-status>
+                    <div class="flex items-center gap-2" *ngIf="selectedStatus">
+                        <div>{{ selectedStatus.name }}</div>
+                    </div>
+                </ng-template>
+                <ng-template let-status #item>
+                    <div class="flex items-center">
+                        <div>{{ status.name }}</div>
+                    </div>
+                </ng-template>
+            </p-select>
+        </div>
+        <footer class="mt-2">
+            <p-button icon="pi pi-save" *ngIf="!tarea.id" type="submit" label="Almacenar tarea" [raised]="true" severity="success" class="w-auto mr-4"/>
+            <p-button icon="pi pi-edit" *ngIf="tarea.id" (onClick)="updateTarea($event, myNewTarea)" label="Actualizar Tarea" [raised]="true" severity="success" class="w-auto mr-4"/>
+        </footer>
+    </form>
+</p-dialog>
+
+<p-dialog #dd header="{{tarea.title}}" [modal]="true" [(visible)]="showTareaCheck" [style]="{ width: '35rem' }">
+    <div *ngIf="viewChargeGif" class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 z-10">
+        <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration=".5s" [style]="{ width: '50px', height: '50px' }" />
+    </div>
+    <div class="flex items-center justify-between">
+      <span *ngIf="tarea.id" class="p-text-secondary block mb-8">Registro de la tarea {{tarea.status !== 'COMPLETA' ? 'por finalizar' : 'finalizada'}}</span>
+      <span class="p-text-secondary block mb-8"><b>{{tarea.updatedAt | date: 'yyyy/mm/dd HH:mm:ss'}}</b></span>
+    </div>
+    <form #myTarea="ngForm" (submit)="updateTarea($event, myTarea)">
+        <div class="mb-4 col-span-12 md:col-span-12 w-full">
+            <label for="descripcion" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Descripción</label>
+            <textarea readonly id="descripcion" class="w-full" rows="3" pTextarea name="description" [(ngModel)]="tarea.description" required #description="ngModel"></textarea>
+        </div>
+        <div class="mb-4 col-span-12 md:col-span-12 w-full">
+            <label for="comentary" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Comentario</label>
+            <textarea [readonly]="tarea.status === 'COMPLETA'" id="comentary" placeholder="Desea ingresar algún comentario" class="w-full" rows="3" pTextarea name="comentary" [(ngModel)]="tarea.comentary" required #comentary="ngModel"></textarea>
+        </div>
+        <footer>
+            <p-button *ngIf="tarea.status !== 'COMPLETA'" icon="pi pi-check" type="submit" label="Completar Tarea" [raised]="true" severity="success" class="w-auto mr-4"/>
+        </footer>
+    </form>
+</p-dialog>

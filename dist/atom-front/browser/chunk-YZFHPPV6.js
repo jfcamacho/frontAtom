@@ -1,0 +1,1 @@
+import"./chunk-QWWW7GFA.js";var a=[{path:"",redirectTo:"activity",pathMatch:"full"},{path:"tarea",data:{breadcrumb:"Administrar tipos de tarea"},loadComponent:()=>import("./chunk-KMQRASF5.js").then(t=>t.TareaComponent)}];export{a as default};

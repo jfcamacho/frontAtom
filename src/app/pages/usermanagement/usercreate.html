@@ -1,0 +1,38 @@
+<p-toast />
+<div class="card relative">
+    <div *ngIf="viewWindow" class="absolute inset-0 flex items-center justify-center bg-blue-500 bg-opacity-50 z-10">
+      <p-progress-spinner strokeWidth="8" fill="transparent" animationDuration=".5s" [style]="{ width: '50px', height: '50px' }" />
+    </div>
+    <span class="text-surface-900 dark:text-surface-0 text-xl font-bold mb-6 block">Administrar perfíl</span>
+    <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 lg:col-span-2">
+            
+            <div class="md:shrink-0">
+                <img class="h-64 w-full object-cover md:h-full md:w-64" src="images/pages/SubscribeRecurso.png" alt="Modern building architecture">
+            </div>
+        </div>
+        <div class="col-span-12 lg:col-span-10">
+            <div class="grid grid-cols-12 gap-4">
+                <div class="mb-6 col-span-12 md:col-span-4">
+                    <label for="firstName" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Primer Nombre </label>
+                    <input id="firstName" type="text" pInputText name="firstName" [(ngModel)]="user.firstName" fluid />
+                </div>
+                <div class="mb-6 col-span-12 md:col-span-4">
+                    <label for="lastName" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Primer Apellido </label>
+                    <input id="lastName" type="text" pInputText [(ngModel)]="user.lastName" fluid />
+                </div>
+                <div class="mb-6 col-span-12 md:col-span-4">
+                    <label for="mobilePhone" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Número de Celular </label>
+                    <input id="mobilePhone" type="text" pInputText [(ngModel)]="user.mobilePhone" fluid />
+                </div>
+                <div class="mb-6 col-span-12">
+                    <label for="email" class="font-medium text-surface-900 dark:text-surface-0 mb-2 block"> Email </label>
+                    <input id="email" type="text" pInputText [(ngModel)]="user.email" fluid />
+                </div>
+                <div class="col-span-12">
+                    <p-button icon="pi pi-user-edit" *ngIf="user.id" (onClick)="updateUser()" label="Actualizar perfíl" [raised]="true" severity="success" class="w-auto mr-4"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,1 @@
+import"./chunk-QWWW7GFA.js";var t=[{path:"",redirectTo:"saas",pathMatch:"full"},{path:"saas",data:{breadcrumb:"Res\xFAmen"},loadComponent:()=>import("./chunk-DKNQZBF4.js").then(a=>a.DashboardSaas)}];export{t as default};
